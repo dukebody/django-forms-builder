@@ -121,7 +121,7 @@ class FormForForm(forms.ModelForm):
         model = FormEntry
         exclude = ("form", "entry_time")
 
-    def __init__(self, form, context, *args, **kwargs):
+    def __init__(self, form, context, data, *args, **kwargs):
         """
         Dynamically add each of the form fields for the given form model
         instance and its related field model instances.
@@ -135,13 +135,22 @@ class FormForForm(forms.ModelForm):
         if kwargs.get("instance"):
             for field_entry in kwargs["instance"].fields.all():
                 field_entries[field_entry.field_id] = field_entry.value
-        super(FormForForm, self).__init__(*args, **kwargs)
+        super(FormForForm, self).__init__(data, *args, **kwargs)
         # Create the form fields.
         for field in self.form_fields:
             field_key = field.slug
             field_class = fields.CLASSES[field.field_type]
             field_widget = fields.WIDGETS.get(field.field_type)
-            field_args = {"label": field.label, "required": field.required,
+
+            # A field is required if its associated conditional field
+            # has the indicated value, when the form is bound.
+            if self.is_bound and field.condition_field and \
+                    field.condition_field.slug in data:
+                required = data[field.condition_field.slug] == field.condition_value
+            else:
+                required = field.required
+
+            field_args = {"label": field.label, "required": required,
                           "help_text": field.help_text}
             arg_names = field_class.__init__.__code__.co_varnames
             if "max_length" in arg_names:
