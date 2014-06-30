@@ -196,7 +196,8 @@ class FormForForm(forms.ModelForm):
             if field.required:
                 css_class += " required"
                 if (settings.USE_HTML5 and
-                    field.field_type != fields.CHECKBOX_MULTIPLE):
+                        field.field_type != fields.CHECKBOX_MULTIPLE
+                        and not field.condition_field):
                     self.fields[field_key].widget.attrs["required"] = ""
             self.fields[field_key].widget.attrs["class"] = css_class
             if field.placeholder_text and not field.default:
