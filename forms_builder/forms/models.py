@@ -264,6 +264,13 @@ class Field(AbstractField):
 
     form = models.ForeignKey("Form", related_name="fields")
     order = models.IntegerField(_("Order"), null=True, blank=True)
+    condition_field = models.ForeignKey(
+        'Field', verbose_name=_("Condition field"), null=True,
+        blank=True
+    )
+    condition_value = models.CharField(
+        _('Condition value'), null=True, blank=True, max_length=100
+    )
 
     class Meta(AbstractField.Meta):
         ordering = ("order",)
